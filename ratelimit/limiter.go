@@ -5,13 +5,14 @@ import (
 	"sync"
 	"time"
 	"github.com/Banner-babaner/proxytools/logger"
+    "github.com/Banner-babaner/proxytools/config"
 )
 
 // LimiterService сервис ограничения скорости
 type LimiterService struct {
     mu       sync.RWMutex
     clients  map[string]*clientBucket
-    config   RateLimitConfig
+    config   config.RateLimitConfig
     enabled  bool
 }
 
@@ -24,7 +25,7 @@ type clientBucket struct {
     activeConns int
 }
 
-func NewLimiterService(cfg RateLimitConfig) *LimiterService {
+func NewLimiterService(cfg config.RateLimitConfig) *LimiterService {
     return &LimiterService{
         clients: make(map[string]*clientBucket),
         config:  cfg,

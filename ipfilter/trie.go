@@ -1,0 +1,165 @@
+// internal/ipfilter/trie.go
+package ipfilter
+
+import (
+    "net"
+    "sync"
+)
+
+// TrieNode узел префиксного дерева
+type TrieNode struct {
+    Left   *TrieNode  // 0 бит
+    Right  *TrieNode  // 1 бит
+    Type   ListType   // тип списка, если это конечный узел
+    HasRule bool
+}
+
+// ListType тип списка доступа
+type ListType int
+
+const (
+    Whitelist ListType = iota
+    Blacklist
+    Graylist
+)
+
+// IPTrie префиксное дерево для хранения CIDR
+type IPTrie struct {
+    mu   sync.RWMutex
+    root *TrieNode
+}
+
+func NewIPTrie() *IPTrie {
+    return &IPTrie{
+        root: &TrieNode{},
+    }
+}
+
+// Insert добавляет CIDR в дерево
+func (t *IPTrie) Insert(cidr string, listType ListType) error {
+    _, ipNet, err := net.ParseCIDR(cidr)
+    if err != nil {
+        // пробуем как одиночный IP
+        ip := net.ParseIP(cidr)
+        if ip == nil {
+            return err
+        }
+        ipNet = &net.IPNet{
+            IP:   ip,
+            Mask: net.CIDRMask(32, 32),
+        }
+        if ip.To4() == nil {
+            ipNet.Mask = net.CIDRMask(128, 128)
+        }
+    }
+    
+    t.mu.Lock()
+    defer t.mu.Unlock()
+    
+    ones, _ := ipNet.Mask.Size()
+    ip := ipNet.IP.To4()
+    if ip == nil {
+        ip = ipNet.IP.To16()
+    }
+    
+    node := t.root
+    for i := 0; i < ones; i++ {
+        byteIdx := i / 8
+        bitIdx := 7 - (i % 8)
+        
+        if ip[byteIdx]&(1<<bitIdx) != 0 {
+            if node.Right == nil {
+                node.Right = &TrieNode{}
+            }
+            node = node.Right
+        } else {
+            if node.Left == nil {
+                node.Left = &TrieNode{}
+            }
+            node = node.Left
+        }
+    }
+    
+    node.HasRule = true
+    node.Type = listType
+    return nil
+}
+
+// Search ищет правило для IP
+func (t *IPTrie) Search(ipStr string) (ListType, bool) {
+    ip := net.ParseIP(ipStr)
+    if ip == nil {
+        return 0, false
+    }
+    
+    ip4 := ip.To4()
+    if ip4 == nil {
+        return 0, false
+    }
+    
+    t.mu.RLock()
+    defer t.mu.RUnlock()
+    
+    node := t.root
+    var lastMatch ListType
+    found := false
+    
+    for i := 0; i < 32; i++ {
+        if node.HasRule {
+            lastMatch = node.Type
+            found = true
+        }
+        
+        byteIdx := i / 8
+        bitIdx := 7 - (i % 8)
+        
+        if ip4[byteIdx]&(1<<bitIdx) != 0 {
+            if node.Right == nil {
+                break
+            }
+            node = node.Right
+        } else {
+            if node.Left == nil {
+                break
+            }
+            node = node.Left
+        }
+    }
+    
+    if node.HasRule {
+        lastMatch = node.Type
+        found = true
+    }
+    
+    return lastMatch, found
+}
+
+// InsertRange добавляет диапазон IP
+func (t *IPTrie) InsertRange(startIP, endIP string, listType ListType) error {
+    start := net.ParseIP(startIP)
+    end := net.ParseIP(endIP)
+    if start == nil || end == nil {
+        return nil // TODO: error
+    }
+    
+    // Упрощённый подход: перебираем все IP в диапазоне
+    // Для продакшена нужно разбиение на CIDR
+    start4 := start.To4()
+    end4 := end.To4()
+    
+    for ip := start4; !ip.Equal(end4); incrementIP(ip) {
+        t.Insert(ip.String()+"/32", listType)
+    }
+    t.Insert(end4.String()+"/32", listType)
+    
+    return nil
+}
+
+func incrementIP(ip net.IP) {
+    for j := len(ip) - 1; j >= 0; j-- {
+        ip[j]++
+        if ip[j] > 0 {
+            break
+        }
+    }
+}
