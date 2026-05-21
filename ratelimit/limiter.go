@@ -2,10 +2,9 @@
 package ratelimit
 
 import (
-    "sync"
-    "time"
-    
-    "shadowproxy/internal/logger"
+	"sync"
+	"time"
+	"github.com/Banner-babaner/proxytools/logger"
 )
 
 // LimiterService сервис ограничения скорости
