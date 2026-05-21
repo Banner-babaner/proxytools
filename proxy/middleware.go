@@ -1,4 +1,3 @@
-// internal/proxy/middleware.go
 package proxy
 
 import (
@@ -8,7 +7,7 @@ import (
     "github.com/Banner-babaner/proxytools/logger"
 )
 
-// LoggerMiddleware логирует все запросы
+
 func LoggerMiddleware() gin.HandlerFunc {
     return func(c *gin.Context) {
         start := time.Now()
@@ -28,7 +27,7 @@ func LoggerMiddleware() gin.HandlerFunc {
     }
 }
 
-// RecoveryMiddleware восстановление после паники
+
 func RecoveryMiddleware() gin.HandlerFunc {
     return func(c *gin.Context) {
         defer func() {

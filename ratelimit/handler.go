@@ -1,4 +1,3 @@
-// internal/ratelimit/handler.go
 package ratelimit
 
 import (
@@ -13,12 +12,6 @@ func SetLimiterService(ls *LimiterService) {
     limiterService = ls
 }
 
-// GetRateLimitStats godoc
-// @Summary Получить статистику rate limit для IP
-// @Tags rate_limit
-// @Param ip query string true "IP адрес"
-// @Success 200 {object} map[string]interface{}
-// @Router /rate_limit/stats [get]
 func GetRateLimitStats(c *gin.Context) {
     ip := c.Query("ip")
     if ip == "" {

@@ -1,4 +1,3 @@
-// internal/ratelimit/limiter_test.go
 package ratelimit
 
 import (

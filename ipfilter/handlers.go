@@ -1,4 +1,3 @@
-// internal/ipfilter/handler.go
 package ipfilter
 
 import (
@@ -14,38 +13,25 @@ var (
     handlerOnce   sync.Once
 )
 
-// SetFilterService устанавливает сервис для хендлеров
+
 func SetFilterService(fs *FilterService) {
     handlerOnce.Do(func() {
         filterService = fs
     })
 }
 
-// GetAllowLists godoc
-// @Summary Получить текущие списки доступа
-// @Tags ip_filter
-// @Produce json
-// @Success 200 {object} config.ListsConfig
-// @Router /ip_access/allowlists [get]
 func GetAllowLists(c *gin.Context) {
     lists := filterService.GetLists()
     c.JSON(http.StatusOK, lists)
 }
 
-// AddToListRequest тело запроса на добавление
+
 type AddToListRequest struct {
     IP       string `json:"ip" binding:"required"`
     ListType string `json:"list_type" binding:"required,oneof=whitelist blacklist graylist"`
 }
 
-// AddToList godoc
-// @Summary Добавить IP в список
-// @Tags ip_filter
-// @Accept json
-// @Produce json
-// @Param request body AddToListRequest true "IP и тип списка"
-// @Success 200 {object} map[string]string
-// @Router /ip_access/allowlists [post]
+
 func AddToList(c *gin.Context) {
     var req AddToListRequest
     if err := c.ShouldBindJSON(&req); err != nil {
@@ -67,13 +53,7 @@ func AddToList(c *gin.Context) {
     c.JSON(http.StatusOK, gin.H{"message": "IP added successfully"})
 }
 
-// RemoveFromList godoc
-// @Summary Удалить IP из списка
-// @Tags ip_filter
-// @Param ip path string true "IP адрес"
-// @Param list_type query string true "Тип списка"
-// @Success 200 {object} map[string]string
-// @Router /ip_access/allowlists/{ip} [delete]
+
 func RemoveFromList(c *gin.Context) {
     ip := c.Param("ip")
     listType := c.Query("list_type")
@@ -93,12 +73,6 @@ func RemoveFromList(c *gin.Context) {
     c.JSON(http.StatusOK, gin.H{"message": "IP removed successfully"})
 }
 
-// CheckAccess godoc
-// @Summary Проверить доступ для IP
-// @Tags ip_filter
-// @Param ip query string true "IP адрес"
-// @Success 200 {object} map[string]interface{}
-// @Router /ip_access/check [get]
 func CheckAccess(c *gin.Context) {
     ip := c.Query("ip")
     if ip == "" {

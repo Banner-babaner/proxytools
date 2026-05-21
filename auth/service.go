@@ -1,4 +1,3 @@
-// internal/auth/service.go
 package auth
 
 import (
@@ -14,7 +13,6 @@ var (
 	ErrExpiredToken       = errors.New("token expired")
 )
 
-// Claims JWT claims
 type Claims struct {
 	UserID   string `json:"user_id"`
 	Username string `json:"username"`
@@ -22,7 +20,7 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-// Service сервис авторизации
+
 type Service struct {
 	repo      UserRepository
 	secretKey []byte
@@ -37,7 +35,6 @@ func NewService(repo UserRepository, secretKey string, ttl time.Duration) *Servi
 	}
 }
 
-// Login аутентифицирует пользователя и возвращает JWT
 func (s *Service) Login(username, password string) (string, error) {
 	user, err := s.repo.FindByUsername(username)
 	if err != nil {
@@ -63,7 +60,7 @@ func (s *Service) Login(username, password string) (string, error) {
 	return token.SignedString(s.secretKey)
 }
 
-// ValidateToken проверяет JWT и возвращает claims
+
 func (s *Service) ValidateToken(tokenString string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -81,7 +78,6 @@ func (s *Service) ValidateToken(tokenString string) (*Claims, error) {
 		return nil, ErrInvalidToken
 	}
 
-	// Проверяем, что пользователь ещё существует в БД
 	_, err = s.repo.FindByID(claims.UserID)
 	if err != nil {
 		return nil, ErrInvalidToken
@@ -90,17 +86,17 @@ func (s *Service) ValidateToken(tokenString string) (*Claims, error) {
 	return claims, nil
 }
 
-// GetUser возвращает пользователя по ID
+
 func (s *Service) GetUser(id string) (*User, error) {
 	return s.repo.FindByID(id)
 }
 
-// GetUsers возвращает всех пользователей (только для админов)
+
 func (s *Service) GetUsers() ([]*User, error) {
 	return s.repo.FindAll()
 }
 
-// CreateUser создаёт нового пользователя (только для админов)
+
 func (s *Service) CreateUser(username, password, role string) (*User, error) {
 	if role != "admin" && role != "user" {
 		return nil, errors.New("invalid role: must be 'admin' or 'user'")
@@ -120,7 +116,6 @@ func (s *Service) CreateUser(username, password, role string) (*User, error) {
 	return user, nil
 }
 
-// DeleteUser удаляет пользователя (только для админов)
 func (s *Service) DeleteUser(id string) error {
 	return s.repo.Delete(id)
 }

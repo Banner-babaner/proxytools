@@ -1,4 +1,3 @@
-// internal/cache/invalidation.go
 package cache
 
 import (
@@ -8,7 +7,6 @@ import (
     "github.com/Banner-babaner/proxytools/logger"
 )
 
-// InvalidateByPattern инвалидация по регулярному выражению
 func (cs *CacheService) InvalidateByPattern(pattern string) (int, error) {
     re, err := regexp.Compile(pattern)
     if err != nil {
@@ -35,7 +33,7 @@ func (cs *CacheService) InvalidateByPattern(pattern string) (int, error) {
     return count, nil
 }
 
-// InvalidateExpired удаляет просроченные записи
+
 func (cs *CacheService) InvalidateExpired() int {
     cs.mu.Lock()
     defer cs.mu.Unlock()
@@ -59,7 +57,7 @@ func (cs *CacheService) InvalidateExpired() int {
     return count
 }
 
-// StartAutoInvalidation автоматическая инвалидация по TTL
+
 func (cs *CacheService) StartAutoInvalidation() {
     ticker := time.NewTicker(30 * time.Second)
     go func() {
@@ -69,11 +67,9 @@ func (cs *CacheService) StartAutoInvalidation() {
     }()
 }
 
-// CascadeInvalidate каскадная инвалидация связанных ресурсов
 func (cs *CacheService) CascadeInvalidate(key string) {
     cs.Delete(key)
     
-    // Находим связанные ключи (префикс до первого /)
     parts := strings.Split(key, ":")
     if len(parts) > 0 {
         prefix := parts[0]

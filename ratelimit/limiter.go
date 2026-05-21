@@ -1,4 +1,3 @@
-// internal/ratelimit/limiter.go
 package ratelimit
 
 import (
@@ -8,7 +7,7 @@ import (
     "github.com/Banner-babaner/proxytools/config"
 )
 
-// LimiterService сервис ограничения скорости
+
 type LimiterService struct {
     mu       sync.RWMutex
     clients  map[string]*clientBucket
@@ -33,7 +32,7 @@ func NewLimiterService(cfg config.RateLimitConfig) *LimiterService {
     }
 }
 
-// Allow проверяет, разрешён ли запрос
+
 func (ls *LimiterService) Allow(ip string) bool {
     if !ls.enabled {
         return true
@@ -54,7 +53,7 @@ func (ls *LimiterService) Allow(ip string) bool {
         ls.clients[ip] = bucket
     }
     
-    // Пополняем токены по времени
+
     now := time.Now()
     elapsed := now.Sub(bucket.lastUpdated).Seconds()
     bucket.tokens += elapsed * bucket.rps
@@ -76,7 +75,7 @@ func (ls *LimiterService) Allow(ip string) bool {
     return false
 }
 
-// IncrementConnections увеличивает счётчик соединений
+
 func (ls *LimiterService) IncrementConnections(ip string) bool {
     if !ls.enabled {
         return true
@@ -104,7 +103,7 @@ func (ls *LimiterService) IncrementConnections(ip string) bool {
     return true
 }
 
-// DecrementConnections уменьшает счётчик соединений
+
 func (ls *LimiterService) DecrementConnections(ip string) {
     if !ls.enabled {
         return
@@ -120,7 +119,7 @@ func (ls *LimiterService) DecrementConnections(ip string) {
     }
 }
 
-// GetStats возвращает статистику по клиенту
+
 func (ls *LimiterService) GetStats(ip string) map[string]interface{} {
     ls.mu.RLock()
     defer ls.mu.RUnlock()
@@ -137,7 +136,7 @@ func (ls *LimiterService) GetStats(ip string) map[string]interface{} {
     return nil
 }
 
-// Cleanup удаляет старые записи
+
 func (ls *LimiterService) Cleanup() {
     ticker := time.NewTicker(5 * time.Minute)
     go func() {

@@ -1,4 +1,3 @@
-// internal/proxy/proxy.go
 package proxy
 
 import (
@@ -14,7 +13,7 @@ import (
     "github.com/Banner-babaner/proxytools/ratelimit"
 )
 
-// ProxyHandler основной обработчик прокси
+
 type ProxyHandler struct {
     reverseProxy *httputil.ReverseProxy
     ipFilter     *ipfilter.FilterService
@@ -37,7 +36,6 @@ func NewProxyHandler(
 
     proxy := httputil.NewSingleHostReverseProxy(target)
     
-    // Кастомный транспорт
     proxy.Transport = &http.Transport{
         MaxIdleConns:        100,
         IdleConnTimeout:     90 * time.Second,
@@ -53,12 +51,11 @@ func NewProxyHandler(
     }, nil
 }
 
-// ServeHTTP обрабатывает запрос
+
 func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     startTime := time.Now()
     clientIP := r.RemoteAddr
 
-    // 1. IP Filter
     access := ph.ipFilter.CheckAccess(clientIP)
     if access == ipfilter.Denied {
         ph.logDenied(clientIP, r.URL.String(), "blacklist")
@@ -67,11 +64,9 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
         return
     }
     if access == ipfilter.CaptchaRequired {
-        // TODO: реализовать CAPTCHA
         logger.Warn().Str("ip", clientIP).Msg("Captcha required")
     }
 
-    // 2. Rate Limiting
     if !ph.rateLimiter.Allow(clientIP) {
         ph.metrics.RateLimitedCount.Add(1)
         ph.metrics.RecordRequest(false, time.Since(startTime).Seconds(), 0, 0)
@@ -79,7 +74,6 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    // 3. Проверяем кэш
     cacheKey := ph.cacheService.GenerateKey(r.Method, r.URL.String())
     ttl := ph.cacheService.GetTTLForPath(r.Method, r.URL.Path, r.Host)
 
@@ -106,7 +100,6 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
         ph.metrics.RecordCacheMiss()
     }
 
-    // 4. Проксируем запрос
     crw := cache.NewCacheResponseWriter(w)
     
     ph.reverseProxy.ServeHTTP(crw, r)
@@ -114,7 +107,6 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     duration := time.Since(startTime).Seconds()
     ph.metrics.RecordRequest(true, duration, r.ContentLength, int64(crw.Buffer.Len()))
 
-    // 5. Кэшируем ответ (только успешные)
     if ttl > 0 && crw.StatusCode >= 200 && crw.StatusCode < 300 {
         ph.cacheService.Set(cacheKey, crw.StatusCode, w.Header(), crw.BodyBytes(), ttl, nil)
     }

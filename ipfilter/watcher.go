@@ -1,4 +1,4 @@
-// internal/ipfilter/watcher.go
+
 package ipfilter
 
 import (
@@ -8,7 +8,7 @@ import (
     "github.com/spf13/viper"
 )
 
-// StartWatcher отслеживает изменения конфигурационного файла
+
 func (fs *FilterService) StartWatcher(configPath string) {
     watcher, err := fsnotify.NewWatcher()
     if err != nil {

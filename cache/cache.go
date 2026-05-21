@@ -1,4 +1,3 @@
-// internal/cache/cache.go
 package cache
 
 import (
@@ -12,7 +11,7 @@ import (
     "github.com/Banner-babaner/proxytools/config"
 )
 
-// CacheEntry запись в кэше
+
 type CacheEntry struct {
 	StatusCode int
 	Headers    http.Header
@@ -114,7 +113,7 @@ func (cs *CacheService) Set(key string, statusCode int, headers http.Header, bod
 
 	bodySize := int64(len(body))
 	
-	// Фильтр размера только если maxSize задан
+
 	if cs.maxSize > 0 {
 		if bodySize > cs.maxSize/10 {
 			return
@@ -227,7 +226,7 @@ func (cs *CacheService) evict(needed int64) {
 	}
 }
 
-// CacheResponseWriter обёртка для захвата ответа
+
 type CacheResponseWriter struct {
 	http.ResponseWriter
 	Buffer     *bytes.Buffer

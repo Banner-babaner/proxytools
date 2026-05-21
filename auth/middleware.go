@@ -11,7 +11,6 @@ var (
 )
 
 
-// GetCurrentUser возвращает текущего пользователя из контекста
 func GetCurrentUser(c *gin.Context) (userID, username, role string, err error) {
 	userIDRaw, exists := c.Get("user_id")
 	if !exists {

@@ -1,4 +1,3 @@
-// internal/monitor/metrics_test.go
 package monitor
 
 import (

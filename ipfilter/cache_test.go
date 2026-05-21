@@ -1,4 +1,3 @@
-// internal/ipfilter/cache_test.go
 package ipfilter
 
 import (

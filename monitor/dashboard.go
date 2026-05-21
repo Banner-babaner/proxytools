@@ -1,4 +1,3 @@
-// internal/monitor/dashboard.go
 package monitor
 
 const dashboardHTML = `<!DOCTYPE html>

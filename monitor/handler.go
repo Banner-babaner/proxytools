@@ -1,4 +1,3 @@
-// internal/monitor/handler.go
 package monitor
 
 import (
@@ -20,21 +19,12 @@ func SetMetricsService(ms *MetricsService) {
     metricsService = ms
 }
 
-// GetMetrics godoc
-// @Summary Получить текущие метрики
-// @Tags monitor
-// @Produce json
-// @Success 200 {object} map[string]interface{}
-// @Router /monitor/metrics [get]
+
 func GetMetrics(c *gin.Context) {
     stats := metricsService.GetStats()
     c.JSON(http.StatusOK, stats)
 }
 
-// DashboardWS godoc
-// @Summary WebSocket для real-time метрик
-// @Tags monitor
-// @Router /monitor/ws [get]
 func DashboardWS(c *gin.Context) {
     conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
     if err != nil {
@@ -45,7 +35,6 @@ func DashboardWS(c *gin.Context) {
     metricsService.AddWSClient(conn)
     defer metricsService.RemoveWSClient(conn)
 
-    // Держим соединение открытым
     for {
         _, _, err := conn.ReadMessage()
         if err != nil {
@@ -54,7 +43,6 @@ func DashboardWS(c *gin.Context) {
     }
 }
 
-// DashboardHTML отдаёт страницу дашборда
 func DashboardHTML(c *gin.Context) {
     c.Header("Content-Type", "text/html; charset=utf-8")
     c.String(http.StatusOK, dashboardHTML)

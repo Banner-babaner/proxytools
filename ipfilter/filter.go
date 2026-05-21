@@ -1,4 +1,3 @@
-// internal/ipfilter/filter.go
 package ipfilter
 
 import (
@@ -45,7 +44,6 @@ func NewFilterService(cfg config.IPFilterConfig) (*FilterService, error) {
 	return fs, nil
 }
 
-// loadLists НЕ блокирует мьютекс — вызывающий должен сам это сделать
 func (fs *FilterService) loadListsNoLock(lists config.ListsConfig) {
 	fs.trie = NewIPTrie()
 

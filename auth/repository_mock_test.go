@@ -1,4 +1,3 @@
-// internal/auth/repository_mock_test.go
 package auth
 
 import (

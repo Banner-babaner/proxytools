@@ -1,20 +1,19 @@
-// internal/ipfilter/trie.go
 package ipfilter
 
 import (
-    "net"
-    "sync"
+	"fmt"
+	"net"
+	"sync"
 )
 
-// TrieNode узел префиксного дерева
 type TrieNode struct {
-    Left   *TrieNode  // 0 бит
-    Right  *TrieNode  // 1 бит
-    Type   ListType   // тип списка, если это конечный узел
+    Left   *TrieNode
+    Right  *TrieNode
+    Type   ListType 
     HasRule bool
 }
 
-// ListType тип списка доступа
+
 type ListType int
 
 const (
@@ -23,7 +22,6 @@ const (
     Graylist
 )
 
-// IPTrie префиксное дерево для хранения CIDR
 type IPTrie struct {
     mu   sync.RWMutex
     root *TrieNode
@@ -35,7 +33,7 @@ func NewIPTrie() *IPTrie {
     }
 }
 
-// Insert добавляет CIDR в дерево
+
 func (t *IPTrie) Insert(cidr string, listType ListType) error {
     _, ipNet, err := net.ParseCIDR(cidr)
     if err != nil {
@@ -85,7 +83,7 @@ func (t *IPTrie) Insert(cidr string, listType ListType) error {
     return nil
 }
 
-// Search ищет правило для IP
+
 func (t *IPTrie) Search(ipStr string) (ListType, bool) {
     ip := net.ParseIP(ipStr)
     if ip == nil {
@@ -134,16 +132,15 @@ func (t *IPTrie) Search(ipStr string) (ListType, bool) {
     return lastMatch, found
 }
 
-// InsertRange добавляет диапазон IP
+
 func (t *IPTrie) InsertRange(startIP, endIP string, listType ListType) error {
     start := net.ParseIP(startIP)
     end := net.ParseIP(endIP)
     if start == nil || end == nil {
-        return nil // TODO: error
+        return fmt.Errorf("Invalid IP-range")
     }
     
-    // Упрощённый подход: перебираем все IP в диапазоне
-    // Для продакшена нужно разбиение на CIDR
+
     start4 := start.To4()
     end4 := end.To4()
     

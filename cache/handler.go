@@ -1,4 +1,3 @@
-// internal/cache/handler.go
 package cache
 
 import (
@@ -14,7 +13,7 @@ func SetCacheService(cs *CacheService) {
     cacheService = cs
 }
 
-// InvalidateRequest тело запроса на инвалидацию
+
 type InvalidateRequest struct {
     Key     string   `json:"key"`
     Prefix  string   `json:"prefix"`
@@ -23,14 +22,6 @@ type InvalidateRequest struct {
     Clear   bool     `json:"clear_all"`
 }
 
-// InvalidateCache godoc
-// @Summary Инвалидировать кэш
-// @Tags cache
-// @Accept json
-// @Produce json
-// @Param request body InvalidateRequest true "Параметры инвалидации"
-// @Success 200 {object} map[string]interface{}
-// @Router /cache/invalidate [post]
 func InvalidateCache(c *gin.Context) {
     var req InvalidateRequest
     if err := c.ShouldBindJSON(&req); err != nil {
@@ -74,11 +65,7 @@ func InvalidateCache(c *gin.Context) {
     c.JSON(http.StatusOK, gin.H{"invalidated": count})
 }
 
-// GetCacheStats godoc
-// @Summary Получить статистику кэша
-// @Tags cache
-// @Success 200 {object} map[string]interface{}
-// @Router /cache/stats [get]
+
 func GetCacheStats(c *gin.Context) {
     cacheService.mu.RLock()
     defer cacheService.mu.RUnlock()

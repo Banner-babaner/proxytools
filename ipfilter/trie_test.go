@@ -1,4 +1,3 @@
-// internal/ipfilter/trie_test.go
 package ipfilter
 
 import (

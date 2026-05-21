@@ -1,4 +1,3 @@
-// internal/logger/logger.go
 package logger
 
 import (
@@ -37,7 +36,7 @@ func Init(level string, output string) {
         Caller().
         Logger()
     
-    zerolog.TimeFieldFormat = time.RFC3339
+    zerolog.TimeFieldFormat = time.DateTime
 }
 
 func Debug() *zerolog.Event { return Log.Debug() }

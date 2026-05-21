@@ -1,4 +1,3 @@
-// internal/monitor/metrics.go
 package monitor
 
 import (
@@ -9,7 +8,6 @@ import (
     "github.com/Banner-babaner/proxytools/logger"
 )
 
-// MetricsService сервис сбора метрик
 type MetricsService struct {
     TotalRequests    atomic.Int64
     AllowedRequests  atomic.Int64
@@ -22,7 +20,6 @@ type MetricsService struct {
     RateLimitedCount atomic.Int64
     StartTime        time.Time
 
-    // Для истории (последние 60 секунд)
     rpsHistory    []int64
     latencyHist   []float64
     mu            sync.RWMutex
@@ -61,7 +58,7 @@ func (ms *MetricsService) collectRPS() {
     }
 }
 
-// RecordRequest записывает метрики запроса
+
 func (ms *MetricsService) RecordRequest(allowed bool, latency float64, bytesUp, bytesDown int64) {
     ms.TotalRequests.Add(1)
     if allowed {
@@ -77,17 +74,14 @@ func (ms *MetricsService) RecordRequest(allowed bool, latency float64, bytesUp, 
     ms.mu.Unlock()
 }
 
-// RecordCacheHit записывает попадание в кэш
 func (ms *MetricsService) RecordCacheHit() {
     ms.CacheHits.Add(1)
 }
 
-// RecordCacheMiss записывает промах кэша
 func (ms *MetricsService) RecordCacheMiss() {
     ms.CacheMisses.Add(1)
 }
 
-// GetStats возвращает текущую статистику
 func (ms *MetricsService) GetStats() map[string]interface{} {
     uptime := time.Since(ms.StartTime).Seconds()
 
@@ -115,21 +109,19 @@ func (ms *MetricsService) GetStats() map[string]interface{} {
     }
 }
 
-// AddWSClient добавляет WebSocket клиента
 func (ms *MetricsService) AddWSClient(conn *websocket.Conn) {
     ms.wsMu.Lock()
     ms.wsClients[conn] = true
     ms.wsMu.Unlock()
 }
 
-// RemoveWSClient удаляет WebSocket клиента
+
 func (ms *MetricsService) RemoveWSClient(conn *websocket.Conn) {
     ms.wsMu.Lock()
     delete(ms.wsClients, conn)
     ms.wsMu.Unlock()
 }
 
-// BroadcastMetrics рассылает метрики всем WS клиентам
 func (ms *MetricsService) BroadcastMetrics() {
     ticker := time.NewTicker(1 * time.Second)
     for range ticker.C {

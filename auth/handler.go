@@ -1,4 +1,3 @@
-// internal/auth/handler.go
 package auth
 
 import (
@@ -27,15 +26,7 @@ type LoginResponse struct {
 	Role     string `json:"role"`
 }
 
-// Login godoc
-// @Summary Войти в систему
-// @Tags auth
-// @Accept json
-// @Produce json
-// @Param request body LoginRequest true "Логин и пароль"
-// @Success 200 {object} LoginResponse
-// @Failure 401 {object} map[string]string
-// @Router /auth/login [post]
+
 func Login(c *gin.Context) {
 	var req LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -54,7 +45,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	// Получаем пользователя для ответа
+
 	claims, _ := authService.ValidateToken(token)
 
 	logger.Info().
@@ -69,22 +60,14 @@ func Login(c *gin.Context) {
 	})
 }
 
-// CreateUserRequest запрос на создание пользователя
+
 type CreateUserRequest struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
 	Role     string `json:"role" binding:"required,oneof=admin user"`
 }
 
-// CreateUser godoc
-// @Summary Создать пользователя (только для админов)
-// @Tags auth
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Param request body CreateUserRequest true "Данные пользователя"
-// @Success 201 {object} User
-// @Router /auth/users [post]
+
 func CreateUser(c *gin.Context) {
 	var req CreateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -106,13 +89,7 @@ func CreateUser(c *gin.Context) {
 	c.JSON(http.StatusCreated, user)
 }
 
-// GetUsers godoc
-// @Summary Получить список пользователей (только для админов)
-// @Tags auth
-// @Produce json
-// @Security BearerAuth
-// @Success 200 {array} User
-// @Router /auth/users [get]
+
 func GetUsers(c *gin.Context) {
 	users, err := authService.GetUsers()
 	if err != nil {
