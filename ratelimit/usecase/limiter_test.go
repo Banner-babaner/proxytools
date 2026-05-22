@@ -1,4 +1,4 @@
-package ratelimit
+package usecases
 
 import (
 	"testing"

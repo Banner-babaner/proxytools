@@ -1,20 +1,22 @@
-package ipfilter
+package transport
 
 import (
-    "net/http"
-    "sync"
-    
-    "github.com/gin-gonic/gin"
-    "github.com/Banner-babaner/proxytools/logger"
+	"net/http"
+	"sync"
+
+	"github.com/Banner-babaner/proxytools/ipfilter/entity"
+	"github.com/Banner-babaner/proxytools/ipfilter/usecase"
+	"github.com/Banner-babaner/proxytools/logger"
+	"github.com/gin-gonic/gin"
 )
 
 var (
-    filterService *FilterService
+    filterService *usecase.FilterService
     handlerOnce   sync.Once
 )
 
 
-func SetFilterService(fs *FilterService) {
+func SetFilterService(fs *usecase.FilterService) {
     handlerOnce.Do(func() {
         filterService = fs
     })
@@ -84,11 +86,11 @@ func CheckAccess(c *gin.Context) {
     
     var status string
     switch result {
-    case Allowed:
+    case entity.Allowed:
         status = "allowed"
-    case Denied:
+    case entity.Denied:
         status = "denied"
-    case CaptchaRequired:
+    case entity.CaptchaRequired:
         status = "captcha_required"
     }
     

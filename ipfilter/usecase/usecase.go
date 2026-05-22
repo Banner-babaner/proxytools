@@ -1,38 +1,40 @@
-package ipfilter
+package usecase
 
 import (
     "fmt"
     "sync"
     "time"
-	"github.com/Banner-babaner/proxytools/config"
     "github.com/Banner-babaner/proxytools/logger"
+	"github.com/Banner-babaner/proxytools/ipfilter/entity"
+	"github.com/Banner-babaner/proxytools/ipfilter/repository"
 )
 
-type AccessResult int
 
-const (
-	Allowed AccessResult = iota
-	Denied
-	CaptchaRequired
-)
 
 type FilterService struct {
 	mu            sync.RWMutex
-	trie          *IPTrie
-	cache         *IPCache
+	builder       func() repository.IPListRepository
+	repo          repository.IPListRepository
+	cache         repository.IPCache
 	defaultPolicy string
-	lists         config.ListsConfig
+	lists         entity.ListsConfig
 }
 
-func NewFilterService(cfg config.IPFilterConfig) (*FilterService, error) {
+
+
+
+func NewFilterService(cfg entity.IPFilterConfig,
+	repoBuilder func() repository.IPListRepository,
+	cacheBuilder func(maxSize int, ttlSeconds time.Duration) (repository.IPCache, error)) (*FilterService, error) {
 	fs := &FilterService{
-		trie:          NewIPTrie(),
+		builder:       repoBuilder,
+		repo:          repoBuilder(),
 		defaultPolicy: cfg.DefaultPolicy,
 		lists:         cfg.Lists,
 	}
 
 	if cfg.Cache.Enabled {
-		cache, err := NewIPCache(cfg.Cache.MaxSize, time.Duration(cfg.Cache.TTL)*time.Second)
+		cache, err := cacheBuilder(cfg.Cache.MaxSize, time.Duration(cfg.Cache.TTL)*time.Second)
 		if err != nil {
 			return nil, err
 		}
@@ -44,19 +46,19 @@ func NewFilterService(cfg config.IPFilterConfig) (*FilterService, error) {
 	return fs, nil
 }
 
-func (fs *FilterService) loadListsNoLock(lists config.ListsConfig) {
-	fs.trie = NewIPTrie()
+func (fs *FilterService) loadListsNoLock(lists entity.ListsConfig) {
+	fs.repo = fs.builder()
 
 	for _, ip := range lists.Blacklist {
-		fs.trie.Insert(ip, Blacklist)
+		fs.repo.Insert(ip, entity.Blacklist)
 	}
 
 	for _, ip := range lists.Whitelist {
-		fs.trie.Insert(ip, Whitelist)
+		fs.repo.Insert(ip, entity.Whitelist)
 	}
 
 	for _, ip := range lists.Graylist {
-		fs.trie.Insert(ip, Graylist)
+		fs.repo.Insert(ip, entity.Graylist)
 	}
 
 	logger.Info().
@@ -67,12 +69,14 @@ func (fs *FilterService) loadListsNoLock(lists config.ListsConfig) {
 }
 
 // loadLists с блокировкой
-func (fs *FilterService) loadLists(lists config.ListsConfig) {
+func (fs *FilterService) loadLists(lists entity.ListsConfig) {
+	fs.mu.Lock()
 	fs.loadListsNoLock(lists)
+	fs.mu.Unlock()
 }
 
 // CheckAccess проверяет доступ для IP
-func (fs *FilterService) CheckAccess(ip string) AccessResult {
+func (fs *FilterService) CheckAccess(ip string) entity.AccessResult {
 	if fs.cache != nil {
 		if listType, hasRule, found := fs.cache.Get(ip); found {
 			return fs.determineAccess(listType, hasRule)
@@ -80,7 +84,7 @@ func (fs *FilterService) CheckAccess(ip string) AccessResult {
 	}
 
 	fs.mu.RLock()
-	listType, hasRule := fs.trie.Search(ip)
+	listType, hasRule := fs.repo.Search(ip)
 	fs.mu.RUnlock()
 
 	if fs.cache != nil {
@@ -90,40 +94,40 @@ func (fs *FilterService) CheckAccess(ip string) AccessResult {
 	return fs.determineAccess(listType, hasRule)
 }
 
-func (fs *FilterService) determineAccess(listType ListType, hasRule bool) AccessResult {
+func (fs *FilterService) determineAccess(listType entity.ListType, hasRule bool) entity.AccessResult {
 	if hasRule {
 		switch listType {
-		case Blacklist:
-			return Denied
-		case Whitelist:
-			return Allowed
-		case Graylist:
-			return CaptchaRequired
+		case entity.Blacklist:
+			return entity.Denied
+		case entity.Whitelist:
+			return entity.Allowed
+		case entity.Graylist:
+			return entity.CaptchaRequired
 		}
 	}
 
 	if fs.defaultPolicy == "allow" {
-		return Allowed
+		return entity.Allowed
 	}
-	return Denied
+	return entity.Denied
 }
 
 // AddIP добавляет IP в список
 func (fs *FilterService) AddIP(ip string, listType string) error {
-	var lt ListType
+	var lt entity.ListType
 	switch listType {
 	case "whitelist":
-		lt = Whitelist
+		lt = entity.Whitelist
 		fs.mu.Lock()
 		fs.lists.Whitelist = append(fs.lists.Whitelist, ip)
 		fs.mu.Unlock()
 	case "blacklist":
-		lt = Blacklist
+		lt = entity.Blacklist
 		fs.mu.Lock()
 		fs.lists.Blacklist = append(fs.lists.Blacklist, ip)
 		fs.mu.Unlock()
 	case "graylist":
-		lt = Graylist
+		lt = entity.Graylist
 		fs.mu.Lock()
 		fs.lists.Graylist = append(fs.lists.Graylist, ip)
 		fs.mu.Unlock()
@@ -132,14 +136,14 @@ func (fs *FilterService) AddIP(ip string, listType string) error {
 	}
 
 	fs.mu.Lock()
-	if err := fs.trie.Insert(ip, lt); err != nil {
+	if err := fs.repo.Insert(ip, lt); err != nil {
 		fs.mu.Unlock()
 		return err
 	}
 	fs.mu.Unlock()
 
 	if fs.cache != nil {
-		fs.cache.cache.Remove(ip)
+		fs.cache.Remove(ip)
 	}
 
 	return nil
@@ -165,12 +169,12 @@ func (fs *FilterService) RemoveIP(ip string, listType string) {
 
 	// Инвалидируем кэш
 	if fs.cache != nil {
-		fs.cache.cache.Remove(ip)
+		fs.cache.Remove(ip)
 	}
 }
 
 // GetLists возвращает текущие списки
-func (fs *FilterService) GetLists() config.ListsConfig {
+func (fs *FilterService) GetLists() entity.ListsConfig {
 	fs.mu.RLock()
 	defer fs.mu.RUnlock()
 	return fs.lists

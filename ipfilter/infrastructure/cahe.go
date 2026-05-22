@@ -1,12 +1,14 @@
-package ipfilter
+package infrastructure
 
 import (
-    lru "github.com/hashicorp/golang-lru/v2"
-    "time"
+	"time"
+
+	"github.com/Banner-babaner/proxytools/ipfilter/entity"
+	lru "github.com/hashicorp/golang-lru/v2"
 )
 
 type cacheEntry struct {
-    listType  ListType
+    listType  entity.ListType
     hasRule   bool
     expiresAt time.Time
 }
@@ -28,21 +30,25 @@ func NewIPCache(maxSize int, ttl time.Duration) (*IPCache, error) {
     }, nil
 }
 
-func (c *IPCache) Get(ip string) (ListType, bool, bool) {
+func (c *IPCache) Remove(ip string){
+    c.cache.Remove(ip)
+}
+
+func (c *IPCache) Get(ip string) (entity.ListType, bool, bool) {
     entry, ok := c.cache.Get(ip)
     if !ok {
         return 0, false, false
     }
     
     if time.Now().After(entry.expiresAt) {
-        c.cache.Remove(ip)
+        c.Remove(ip)
         return 0, false, false
     }
     
     return entry.listType, entry.hasRule, true
 }
 
-func (c *IPCache) Set(ip string, listType ListType, hasRule bool) {
+func (c *IPCache) Set(ip string, listType  entity.ListType, hasRule bool) {
     c.cache.Add(ip, cacheEntry{
         listType:  listType,
         hasRule:   hasRule,

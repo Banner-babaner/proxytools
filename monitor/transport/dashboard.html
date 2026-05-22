@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Proxy Dashboard</title>
+    <meta charset="utf-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: monospace; background: #1a1a2e; color: #eee; padding: 20px; }
+        h1 { color: #00d4ff; margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: #16213e; border-radius: 8px; padding: 20px; border: 1px solid #0f3460; }
+        .card h2 { color: #e94560; margin-bottom: 15px; font-size: 16px; }
+        .metric { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #0f3460; }
+        .metric-value { color: #00d4ff; font-weight: bold; }
+        .bar { background: #0f3460; height: 20px; border-radius: 10px; overflow: hidden; margin: 10px 0; }
+        .bar-fill { background: #e94560; height: 100%; transition: width 0.3s; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { text-align: left; padding: 8px; border-bottom: 1px solid #0f3460; }
+        th { color: #e94560; }
+    </style>
+</head>
+<body>
+    <h1>Proxy Dashboard</h1>
+    <div class="grid">
+        <div class="card">
+            <h2>Overview</h2>
+            <div class="metric"><span>Uptime</span><span class="metric-value" id="uptime">-</span></div>
+            <div class="metric"><span>Total Requests</span><span class="metric-value" id="total">-</span></div>
+            <div class="metric"><span>Allowed</span><span class="metric-value" id="allowed">-</span></div>
+            <div class="metric"><span>Denied</span><span class="metric-value" id="denied">-</span></div>
+            <div class="metric"><span>Rate Limited</span><span class="metric-value" id="limited">-</span></div>
+        </div>
+        <div class="card">
+            <h2>Performance</h2>
+            <div class="metric"><span>Current RPS</span><span class="metric-value" id="rps">-</span></div>
+            <div class="metric"><span>Avg Latency (ms)</span><span class="metric-value" id="latency">-</span></div>
+            <div class="metric"><span>Active Connections</span><span class="metric-value" id="conns">-</span></div>
+            <div class="bar"><div class="bar-fill" id="rps-bar" style="width: 0%"></div></div>
+        </div>
+        <div class="card">
+            <h2>Cache</h2>
+            <div class="metric"><span>Cache Hits</span><span class="metric-value" id="cache-hits">-</span></div>
+            <div class="metric"><span>Cache Misses</span><span class="metric-value" id="cache-misses">-</span></div>
+            <div class="metric"><span>Hit Ratio</span><span class="metric-value" id="hit-ratio">-</span></div>
+        </div>
+        <div class="card">
+            <h2>Traffic</h2>
+            <div class="metric"><span>Upload (MB)</span><span class="metric-value" id="up-mb">-</span></div>
+            <div class="metric"><span>Download (MB)</span><span class="metric-value" id="down-mb">-</span></div>
+        </div>
+    </div>
+
+    <script>
+        const ws = new WebSocket('ws://' + location.host + '/monitor/ws');
+        ws.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            document.getElementById('uptime').textContent = Math.floor(data.uptime) + 's';
+            document.getElementById('total').textContent = data.total_requests;
+            document.getElementById('allowed').textContent = data.allowed;
+            document.getElementById('denied').textContent = data.denied;
+            document.getElementById('limited').textContent = data.rate_limited;
+            document.getElementById('rps').textContent = data.current_rps;
+            document.getElementById('latency').textContent = data.avg_latency_ms.toFixed(2);
+            document.getElementById('conns').textContent = data.active_conns;
+            document.getElementById('cache-hits').textContent = data.cache_hits;
+            document.getElementById('cache-misses').textContent = data.cache_misses;
+            const total = data.cache_hits + data.cache_misses;
+            const ratio = total > 0 ? (data.cache_hits / total * 100).toFixed(1) : 0;
+            document.getElementById('hit-ratio').textContent = ratio + '%';
+            document.getElementById('up-mb').textContent = data.total_up_mb.toFixed(2);
+            document.getElementById('down-mb').textContent = data.total_down_mb.toFixed(2);
+            const barWidth = Math.min(data.current_rps / 10 * 100, 100);
+            document.getElementById('rps-bar').style.width = barWidth + '%';
+        };
+    </script>
+</body>
+</html>

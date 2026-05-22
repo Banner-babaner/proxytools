@@ -1,14 +1,15 @@
-package ratelimit
+package transport
 
 import (
-    "net/http"
-    
-    "github.com/gin-gonic/gin"
+	"net/http"
+
+	"github.com/Banner-babaner/proxytools/ratelimit/usecase"
+	"github.com/gin-gonic/gin"
 )
 
-var limiterService *LimiterService
+var limiterService *usecases.LimiterService
 
-func SetLimiterService(ls *LimiterService) {
+func SetLimiterService(ls *usecases.LimiterService) {
     limiterService = ls
 }
 

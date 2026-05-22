@@ -1,26 +1,19 @@
-package ipfilter
+package infrastructure
 
 import (
 	"fmt"
 	"net"
 	"sync"
+    "github.com/Banner-babaner/proxytools/ipfilter/entity"
 )
 
 type TrieNode struct {
     Left   *TrieNode
     Right  *TrieNode
-    Type   ListType 
+    Type   entity.ListType 
     HasRule bool
 }
 
-
-type ListType int
-
-const (
-    Whitelist ListType = iota
-    Blacklist
-    Graylist
-)
 
 type IPTrie struct {
     mu   sync.RWMutex
@@ -34,7 +27,9 @@ func NewIPTrie() *IPTrie {
 }
 
 
-func (t *IPTrie) Insert(cidr string, listType ListType) error {
+
+
+func (t *IPTrie) Insert(cidr string, listType entity.ListType) error {
     _, ipNet, err := net.ParseCIDR(cidr)
     if err != nil {
         // пробуем как одиночный IP
@@ -84,7 +79,7 @@ func (t *IPTrie) Insert(cidr string, listType ListType) error {
 }
 
 
-func (t *IPTrie) Search(ipStr string) (ListType, bool) {
+func (t *IPTrie) Search(ipStr string) (entity.ListType, bool) {
     ip := net.ParseIP(ipStr)
     if ip == nil {
         return 0, false
@@ -99,7 +94,7 @@ func (t *IPTrie) Search(ipStr string) (ListType, bool) {
     defer t.mu.RUnlock()
     
     node := t.root
-    var lastMatch ListType
+    var lastMatch entity.ListType
     found := false
     
     for i := 0; i < 32; i++ {
@@ -133,7 +128,7 @@ func (t *IPTrie) Search(ipStr string) (ListType, bool) {
 }
 
 
-func (t *IPTrie) InsertRange(startIP, endIP string, listType ListType) error {
+func (t *IPTrie) InsertRange(startIP, endIP string, listType entity.ListType) error {
     start := net.ParseIP(startIP)
     end := net.ParseIP(endIP)
     if start == nil || end == nil {

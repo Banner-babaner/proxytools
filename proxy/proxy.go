@@ -6,17 +6,19 @@ import (
     "net/url"
     "time"
 
-    "github.com/Banner-babaner/proxytools/cache"
-    "github.com/Banner-babaner/proxytools/ipfilter"
+    cache "github.com/Banner-babaner/proxytools/cache/usecase"
+    cacheInfra "github.com/Banner-babaner/proxytools/cache/infrastructure"
+    filter "github.com/Banner-babaner/proxytools/ipfilter/usecase"
+    filterEnt "github.com/Banner-babaner/proxytools/ipfilter/entity"
     "github.com/Banner-babaner/proxytools/logger"
-    "github.com/Banner-babaner/proxytools/monitor"
-    "github.com/Banner-babaner/proxytools/ratelimit"
+    monitor "github.com/Banner-babaner/proxytools/monitor/usecase"
+    ratelimit "github.com/Banner-babaner/proxytools/ratelimit/usecase"
 )
 
 
 type ProxyHandler struct {
     reverseProxy *httputil.ReverseProxy
-    ipFilter     *ipfilter.FilterService
+    ipFilter     *filter.FilterService
     rateLimiter  *ratelimit.LimiterService
     cacheService *cache.CacheService
     metrics      *monitor.MetricsService
@@ -24,7 +26,7 @@ type ProxyHandler struct {
 
 func NewProxyHandler(
     upstreamURL string,
-    ipFilter *ipfilter.FilterService,
+    ipFilter *filter.FilterService,
     rateLimiter *ratelimit.LimiterService,
     cacheService *cache.CacheService,
     metrics *monitor.MetricsService,
@@ -57,25 +59,25 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     clientIP := r.RemoteAddr
 
     access := ph.ipFilter.CheckAccess(clientIP)
-    if access == ipfilter.Denied {
+    if access == filterEnt.Denied {
         ph.logDenied(clientIP, r.URL.String(), "blacklist")
         ph.metrics.RecordRequest(false, 0, 0, 0)
         http.Error(w, "Access denied", http.StatusForbidden)
         return
     }
-    if access == ipfilter.CaptchaRequired {
+    if access == filterEnt.CaptchaRequired {
         logger.Warn().Str("ip", clientIP).Msg("Captcha required")
     }
 
     if !ph.rateLimiter.Allow(clientIP) {
-        ph.metrics.RateLimitedCount.Add(1)
+        ph.metrics.RecordRateLimit()
         ph.metrics.RecordRequest(false, time.Since(startTime).Seconds(), 0, 0)
         http.Error(w, "Rate limit exceeded", http.StatusTooManyRequests)
         return
     }
 
     cacheKey := ph.cacheService.GenerateKey(r.Method, r.URL.String())
-    ttl := ph.cacheService.GetTTLForPath(r.Method, r.URL.Path, r.Host)
+    ttl := ph.cacheService.GetTTL(r.Method, r.URL.Path, r.Host)
 
     if ttl > 0 {
         if entry, ok := ph.cacheService.Get(cacheKey); ok {
@@ -100,22 +102,22 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
         ph.metrics.RecordCacheMiss()
     }
 
-    crw := cache.NewCacheResponseWriter(w)
+    crw := cacheInfra.NewCacheResponseWriter(w)
     
     ph.reverseProxy.ServeHTTP(crw, r)
 
     duration := time.Since(startTime).Seconds()
-    ph.metrics.RecordRequest(true, duration, r.ContentLength, int64(crw.Buffer.Len()))
+    ph.metrics.RecordRequest(true, duration, r.ContentLength, int64(len(crw.Body())))
 
-    if ttl > 0 && crw.StatusCode >= 200 && crw.StatusCode < 300 {
-        ph.cacheService.Set(cacheKey, crw.StatusCode, w.Header(), crw.BodyBytes(), ttl, nil)
+    if ttl > 0 && crw.StatusCode() >= 200 && crw.StatusCode() < 300 {
+        ph.cacheService.Set(cacheKey, crw.StatusCode(), w.Header(), crw.Body(), ttl, nil)
     }
 
     logger.Info().
         Str("ip", clientIP).
         Str("method", r.Method).
         Str("url", r.URL.String()).
-        Int("status", crw.StatusCode).
+        Int("status", crw.StatusCode()).
         Dur("duration", time.Duration(duration*float64(time.Second))).
         Msg("Request processed")
 }
