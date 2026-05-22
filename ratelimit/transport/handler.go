@@ -7,19 +7,26 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var limiterService *usecases.LimiterService
-
-func SetLimiterService(ls *usecases.LimiterService) {
-    limiterService = ls
+type Handler struct {
+	service *usecases.LimiterService
 }
 
-func GetRateLimitStats(c *gin.Context) {
-    ip := c.Query("ip")
-    if ip == "" {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "ip parameter is required"})
-        return
-    }
-    
-    stats := limiterService.GetStats(ip)
-    c.JSON(http.StatusOK, stats)
+func NewHandler(svc *usecase.LimiterService) *Handler {
+	return &Handler{service: svc}
+}
+
+func (h *Handler) GetStats(c *gin.Context) {
+	ip := c.Query("ip")
+	if ip == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ip required"})
+		return
+	}
+
+	stats := h.service.GetStats(ip)
+	if stats == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "ip not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, stats)
 }
