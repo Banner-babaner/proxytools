@@ -58,13 +58,11 @@ func TestAllow_TokenRefill(t *testing.T) {
 
 	ip := "10.0.0.1"
 
-	// Исчерпываем
 	for i := 0; i < 5; i++ {
 		assert.True(t, ls.Allow(ip))
 	}
 	assert.False(t, ls.Allow(ip))
 
-	// Ждём пополнения (1 токен/сек)
 	time.Sleep(300 * time.Millisecond)
 
 	assert.True(t, ls.Allow(ip))
@@ -78,7 +76,6 @@ func TestAllow_TokenBurst(t *testing.T) {
 
 	ip := "192.168.1.1"
 
-	// burst — все 3 сразу
 	assert.True(t, ls.Allow(ip))
 	assert.True(t, ls.Allow(ip))
 	assert.True(t, ls.Allow(ip))
@@ -101,7 +98,6 @@ func TestAllow_MultipleClients(t *testing.T) {
 		Default: config.RateLimitDefaults{RPS: 3},
 	})
 
-	// Клиент 1 исчерпал
 	ls.Allow("1.1.1.1")
 	ls.Allow("1.1.1.1")
 	ls.Allow("1.1.1.1")
@@ -130,10 +126,9 @@ func TestAllow_NewClientCreation(t *testing.T) {
 		Default: config.RateLimitDefaults{RPS: 5},
 	})
 
-	// Неизвестный IP — автоматически создаётся bucket
+
 	assert.True(t, ls.Allow("new-client-ip"))
 
-	// Проверяем что bucket создался
 	ls.mu.RLock()
 	_, exists := ls.clients["new-client-ip"]
 	ls.mu.RUnlock()
@@ -150,7 +145,7 @@ func TestIncrementConnections(t *testing.T) {
 
 	assert.True(t, ls.IncrementConnections(ip))
 	assert.True(t, ls.IncrementConnections(ip))
-	assert.False(t, ls.IncrementConnections(ip)) // лимит 2
+	assert.False(t, ls.IncrementConnections(ip))
 }
 
 func TestIncrementConnections_Disabled(t *testing.T) {
@@ -186,7 +181,6 @@ func TestDecrementConnections_Zero(t *testing.T) {
 		Default: config.RateLimitDefaults{Connections: 2},
 	})
 
-	// Не паникует при decrement без increment
 	assert.NotPanics(t, func() {
 		ls.DecrementConnections("unknown")
 	})
@@ -274,7 +268,6 @@ func TestCleanup_OldEntries(t *testing.T) {
 	}
 	ls.mu.Unlock()
 
-	// Принудительная очистка (как в Cleanup)
 	ls.mu.Lock()
 	for ip, bucket := range ls.clients {
 		if time.Since(bucket.lastUpdated) > 10*time.Minute {
@@ -294,7 +287,6 @@ func TestCleanup_FreshEntries(t *testing.T) {
 
 	ls.Allow("ip-fresh")
 
-	// Принудительная очистка
 	ls.mu.Lock()
 	for ip, bucket := range ls.clients {
 		if time.Since(bucket.lastUpdated) > 10*time.Minute {
@@ -303,7 +295,6 @@ func TestCleanup_FreshEntries(t *testing.T) {
 	}
 	ls.mu.Unlock()
 
-	// Свежая запись должна остаться
 	assert.NotNil(t, ls.GetStats("ip-fresh"))
 }
 
@@ -325,7 +316,7 @@ func TestConcurrentAllow(t *testing.T) {
 	}
 
 	wg.Wait()
-	// Не должно быть паники, статистика должна быть
+
 	stats := ls.GetStats("concurrent-ip")
 	assert.NotNil(t, stats)
 }
@@ -351,7 +342,6 @@ func TestConcurrentIncrementDecrement(t *testing.T) {
 	assert.NotNil(t, stats)
 	assert.Equal(t, 25, stats["connections"])
 
-	// Уменьшаем
 	for i := 0; i < 25; i++ {
 		ls.DecrementConnections("concurrent-conn")
 	}
@@ -394,10 +384,8 @@ func TestAllow_MaxTokensReset(t *testing.T) {
 	ls.Allow(ip)
 	ls.Allow(ip)
 
-	// Ждём больше секунды — бакет полностью пополнится
 	time.Sleep(1100 * time.Millisecond)
 
-	// Можно снова использовать burst (но не больше RPS)
 	assert.True(t, ls.Allow(ip))
 	assert.True(t, ls.Allow(ip))
 	assert.True(t, ls.Allow(ip))
@@ -412,15 +400,11 @@ func TestLimiterService_CleanupMethod(t *testing.T) {
 
 	ls.Allow("cleanup-test")
 
-	// Запускаем cleanup вручную (метод не блокирует)
 	ls.Cleanup()
 
-	// Запись свежая, должна остаться
 	stats := ls.GetStats("cleanup-test")
 	assert.NotNil(t, stats)
 
-	// Останавливаем горутину cleanup, чтобы не висела
-	// (в реальности тикер сам остановится при завершении процесса)
 }
 
 func TestAllow_PartialTokenRefill(t *testing.T) {
@@ -431,15 +415,12 @@ func TestAllow_PartialTokenRefill(t *testing.T) {
 
 	ip := "partial-ip"
 
-	// Используем 5 токенов
 	for i := 0; i < 5; i++ {
 		ls.Allow(ip)
 	}
 
-	// Ждём 500ms — должно пополниться ~5 токенов
 	time.Sleep(500 * time.Millisecond)
 
-	// Должны пройти ещё запросы
 	passed := 0
 	for i := 0; i < 10; i++ {
 		if ls.Allow(ip) {
@@ -447,7 +428,6 @@ func TestAllow_PartialTokenRefill(t *testing.T) {
 		}
 	}
 
-	// Примерно 4-5 запросов должно пройти
 	assert.GreaterOrEqual(t, passed, 3)
 }
 
@@ -475,6 +455,5 @@ func TestAllow_ZeroRPS(t *testing.T) {
 		Default: config.RateLimitDefaults{RPS: 0},
 	})
 
-	// RPS=0 — все запросы блокируются
 	assert.False(t, ls.Allow("zero-rps"))
 }
