@@ -3,99 +3,40 @@ package transport
 import (
 	"net/http"
 
+	"github.com/Banner-babaner/proxytools/auth/entity"
+	"github.com/Banner-babaner/proxytools/auth/usecase"
+
 	"github.com/gin-gonic/gin"
-	"github.com/Banner-babaner/proxytools/logger"
 )
 
-var authService *Service
-
-func SetAuthService(s *Service) {
-	authService = s
+type Handler struct {
+	service *usecase.AuthService
 }
 
-// LoginRequest тело запроса на логин
-type LoginRequest struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
+func NewHandler(svc *usecase.AuthService) *Handler {
+	return &Handler{service: svc}
 }
 
-// LoginResponse ответ с токеном
-type LoginResponse struct {
-	Token    string `json:"token"`
-	Username string `json:"username"`
-	Role     string `json:"role"`
-}
-
-
-func Login(c *gin.Context) {
-	var req LoginRequest
+func (h *Handler) Login(c *gin.Context) {
+	var req entity.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	token, err := authService.Login(req.Username, req.Password)
+	resp, err := h.service.Login(req.Username, req.Password)
 	if err != nil {
-		logger.Warn().
-			Str("username", req.Username).
-			Err(err).
-			Msg("Login failed")
-
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
 
-
-	claims, _ := authService.ValidateToken(token)
-
-	logger.Info().
-		Str("username", req.Username).
-		Str("role", claims.Role).
-		Msg("User logged in")
-
-	c.JSON(http.StatusOK, LoginResponse{
-		Token:    token,
-		Username: claims.Username,
-		Role:     claims.Role,
-	})
+	c.SetCookie("token", resp.Token, int(h.service.GetTTL().Seconds()), "/", "", false, true)
+	c.JSON(http.StatusOK, resp)
 }
 
-
-type CreateUserRequest struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
-	Role     string `json:"role" binding:"required,oneof=admin user"`
-}
-
-
-func CreateUser(c *gin.Context) {
-	var req CreateUserRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	user, err := authService.CreateUser(req.Username, req.Password, req.Role)
-	if err != nil {
-		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
-		return
-	}
-
-	logger.Info().
-		Str("username", user.Username).
-		Str("role", user.Role).
-		Msg("User created")
-
-	c.JSON(http.StatusCreated, user)
-}
-
-
-func GetUsers(c *gin.Context) {
-	users, err := authService.GetUsers()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, users)
+func (h *Handler) Me(c *gin.Context) {
+	userID, _ := c.Get("user_id")
+	username, _ := c.Get("username")
+	role, _ := c.Get("role")
+	c.JSON(http.StatusOK, gin.H{"user_id": userID, "username": username, "role": role})
 }

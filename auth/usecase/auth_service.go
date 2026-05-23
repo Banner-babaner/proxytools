@@ -82,3 +82,7 @@ func (s *AuthService) ValidateToken(tokenString string) (*Claims, error) {
 
 	return claims, nil
 }
+
+func (auth *AuthService) GetTTL() time.Duration{
+	return  auth.ttl
+}
