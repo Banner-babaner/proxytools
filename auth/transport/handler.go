@@ -1,4 +1,4 @@
-package auth
+package transport
 
 import (
 	"net/http"
