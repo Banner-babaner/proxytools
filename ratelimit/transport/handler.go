@@ -3,7 +3,6 @@ package transport
 import (
 	"net/http"
 
-	"github.com/Banner-babaner/proxytools/ratelimit/usecase"
 	"github.com/gin-gonic/gin"
 )
 
