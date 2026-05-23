@@ -3,7 +3,8 @@
 package mocks
 
 import (
-	entity "github.com/Banner-babaner/proxytools/cache/entity"
+	entity "cache/entity"
+
 	mock "github.com/stretchr/testify/mock"
 )
 

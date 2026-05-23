@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Banner-babaner/proxytools/cache/entity"
-	"github.com/Banner-babaner/proxytools/cache/mocks"
-	"github.com/Banner-babaner/proxytools/cache/repository"
+	"cache/entity"
+	"cache/mocks"
+	"cache/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

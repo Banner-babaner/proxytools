@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Banner-babaner/proxytools/cache/entity"
-	"github.com/Banner-babaner/proxytools/cache/repository"
+	"cache/entity"
+	"cache/repository"
 )
 
 type CacheService struct {
