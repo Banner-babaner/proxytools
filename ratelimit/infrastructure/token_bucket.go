@@ -4,8 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Banner-babaner/proxytools/ratelimit/entity"
-	"github.com/Banner-babaner/proxytools/ratelimit/repository"
+	"ratelimit/entity"
 )
 
 type clientBucket struct {
@@ -24,7 +23,6 @@ type TokenBucket struct {
 	maxConns int
 }
 
-var _ repository.RateLimitRepository = (*TokenBucket)(nil)
 
 func NewTokenBucket(rps int, maxConns int) *TokenBucket {
 	return &TokenBucket{

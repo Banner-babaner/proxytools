@@ -1,11 +1,12 @@
 package usecase
 
 import (
+	"sync"
 	"testing"
 	"time"
-	"sync"
-	"github.com/stretchr/testify/assert"
+
 	"github.com/Banner-babaner/proxytools/config"
+	"github.com/stretchr/testify/assert"
 )
 
 
@@ -19,6 +20,7 @@ func TestNewLimiterService(t *testing.T) {
 			Connections: 5,
 		},
 	}
+
 
 	ls := NewLimiterService(cfg)
 	assert.NotNil(t, ls)
