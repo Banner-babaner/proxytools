@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"ipfilter/entity"
-	"ipfilter/mocks"
-	"ipfilter/repository"
+	"github.com/Banner-babaner/proxytools/ipfilter/entity"
+	"github.com/Banner-babaner/proxytools/ipfilter/mocks"
+	"github.com/Banner-babaner/proxytools/ipfilter/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

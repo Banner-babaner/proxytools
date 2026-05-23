@@ -1,12 +1,13 @@
 package usecase
 
 import (
-    "fmt"
-    "sync"
-    "time"
-    "github.com/Banner-babaner/proxytools/logger"
-	"ipfilter/entity"
-	"ipfilter/repository"
+	"fmt"
+	"sync"
+	"time"
+
+	"github.com/Banner-babaner/proxytools/ipfilter/entity"
+	"github.com/Banner-babaner/proxytools/ipfilter/repository"
+	"github.com/Banner-babaner/proxytools/logger"
 )
 
 
