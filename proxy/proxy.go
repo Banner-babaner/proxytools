@@ -19,7 +19,7 @@ import (
 type ProxyHandler struct {
     reverseProxy *httputil.ReverseProxy
     ipFilter     *filter.FilterService
-    rateLimiter  *ratelimit.LimiterService
+    rateLimiter  *ratelimit.RateLimitService
     cacheService *cache.CacheService
     metrics      *monitor.MetricsService
 }
@@ -27,7 +27,7 @@ type ProxyHandler struct {
 func NewProxyHandler(
     upstreamURL string,
     ipFilter *filter.FilterService,
-    rateLimiter *ratelimit.LimiterService,
+    rateLimiter *ratelimit.RateLimitService,
     cacheService *cache.CacheService,
     metrics *monitor.MetricsService,
 ) (*ProxyHandler, error) {
