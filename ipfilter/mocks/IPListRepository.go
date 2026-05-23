@@ -12,6 +12,24 @@ type IPListRepository struct {
 	mock.Mock
 }
 
+// GetLists provides a mock function with no fields
+func (_m *IPListRepository) GetLists() entity.ListsConfig {
+	ret := _m.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetLists")
+	}
+
+	var r0 entity.ListsConfig
+	if rf, ok := ret.Get(0).(func() entity.ListsConfig); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(entity.ListsConfig)
+	}
+
+	return r0
+}
+
 // Insert provides a mock function with given fields: cidr, listType
 func (_m *IPListRepository) Insert(cidr string, listType entity.ListType) error {
 	ret := _m.Called(cidr, listType)
@@ -46,6 +64,16 @@ func (_m *IPListRepository) InsertRange(startIP string, endIP string, listType e
 	}
 
 	return r0
+}
+
+// LoadLists provides a mock function with given fields: lists
+func (_m *IPListRepository) LoadLists(lists entity.ListsConfig) {
+	_m.Called(lists)
+}
+
+// Remove provides a mock function with given fields: ip
+func (_m *IPListRepository) Remove(ip string) {
+	_m.Called(ip)
 }
 
 // Search provides a mock function with given fields: ip

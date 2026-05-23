@@ -3,8 +3,8 @@ module github.com/Banner-babaner/proxytools/ipfilter
 go 1.25.7
 
 require (
-	github.com/Banner-babaner/proxytools/config v0.0.0-20260523114305-d4b658529f73
-	github.com/Banner-babaner/proxytools/logger v0.0.0-20260523114305-d4b658529f73
+	github.com/Banner-babaner/proxytools/config v0.0.0-20260523130534-126ff4ccb13f
+	github.com/Banner-babaner/proxytools/logger v0.0.0-20260523130534-126ff4ccb13f
 	github.com/fsnotify/fsnotify v1.10.1
 	github.com/gin-gonic/gin v1.12.0
 	github.com/hashicorp/golang-lru/v2 v2.0.7
