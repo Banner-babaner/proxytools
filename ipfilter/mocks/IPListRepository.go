@@ -3,7 +3,8 @@
 package mocks
 
 import (
-	entity "github.com/Banner-babaner/proxytools/ipfilter/entity"
+	entity "ipfilter/entity"
+
 	mock "github.com/stretchr/testify/mock"
 )
 

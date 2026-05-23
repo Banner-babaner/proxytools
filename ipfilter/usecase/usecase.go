@@ -5,8 +5,8 @@ import (
     "sync"
     "time"
     "github.com/Banner-babaner/proxytools/logger"
-	"github.com/Banner-babaner/proxytools/ipfilter/entity"
-	"github.com/Banner-babaner/proxytools/ipfilter/repository"
+	"ipfilter/entity"
+	"ipfilter/repository"
 )
 
 

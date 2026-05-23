@@ -1,6 +1,6 @@
 package repository
 
-import "github.com/Banner-babaner/proxytools/ipfilter/entity"
+import "ipfilter/entity"
 
 type ConfigWatcher interface {
 	Watch(callback func(entity.ListsConfig))

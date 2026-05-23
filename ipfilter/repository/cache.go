@@ -2,7 +2,7 @@ package repository
 
 import (
 
-	"github.com/Banner-babaner/proxytools/ipfilter/entity"
+	"ipfilter/entity"
 )
 
 type IPCache interface {

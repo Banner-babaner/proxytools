@@ -1,17 +1,16 @@
 package usecase
 
 import (
+	"ratelimit/entity"
 	"sync"
 	"time"
-	"github.com/Banner-babaner/proxytools/logger"
-    "github.com/Banner-babaner/proxytools/config"
 )
 
 
 type LimiterService struct {
     mu       sync.RWMutex
     clients  map[string]*clientBucket
-    config   config.RateLimitConfig
+    config   entity.RateLimitConfig
     enabled  bool
 }
 

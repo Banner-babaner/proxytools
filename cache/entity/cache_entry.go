@@ -32,14 +32,14 @@ type InvalidateRequest struct {
 }
 
 type CacheConfig struct {
-	Enabled    bool
-	DefaultTTL time.Duration
-	MaxSize    int64
-	Rules      []CacheRule
+    Enabled    bool        `mapstructure:"enabled"`
+    DefaultTTL int         `mapstructure:"default_ttl"`
+    MaxSize    int         `mapstructure:"max_size"`
+    Rules      []CacheRule `mapstructure:"rules"`
 }
 
 type CacheRule struct {
-	Path   string
-	Domain string
-	TTL    time.Duration
+    Path   string `mapstructure:"path"`
+    Domain string `mapstructure:"domain"`
+    TTL    int    `mapstructure:"ttl"`
 }

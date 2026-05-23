@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/Banner-babaner/proxytools/ipfilter/entity"
-	"github.com/Banner-babaner/proxytools/ipfilter/usecase"
+	"ipfilter/entity"
+	"ipfilter/usecase"
 	"github.com/Banner-babaner/proxytools/logger"
 	"github.com/gin-gonic/gin"
 )
