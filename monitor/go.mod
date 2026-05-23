@@ -1,4 +1,4 @@
-module monitor
+module github.com/Banner-babaner/proxytools/monitor
 
 go 1.25.7
 

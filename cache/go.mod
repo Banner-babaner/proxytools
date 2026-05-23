@@ -1,4 +1,4 @@
-module cache
+module github.com/Banner-babaner/proxytools/cache
 
 go 1.25.7
 

@@ -1,4 +1,4 @@
-module auth
+module github.com/Banner-babaner/proxytools/auth
 
 go 1.25.7
 

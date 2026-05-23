@@ -1,4 +1,4 @@
-module config
+module github.com/Banner-babaner/proxytools/config
 
 go 1.25.7
 

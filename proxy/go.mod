@@ -1,4 +1,4 @@
-module proxy
+module github.com/Banner-babaner/proxytools/proxy
 
 go 1.25.7
 

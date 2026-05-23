@@ -1,4 +1,4 @@
-module logger
+module github.com/Banner-babaner/proxytools/logger
 
 go 1.25.7
 

@@ -1,4 +1,4 @@
-module ipfilter
+module github.com/Banner-babaner/proxytools/ipfilter
 
 go 1.25.7
 

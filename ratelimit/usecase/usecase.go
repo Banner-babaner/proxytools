@@ -3,6 +3,9 @@ package usecase
 import (
 	"sync"
 	"time"
+
+	"github.com/Banner-babaner/proxytools/logger"
+	"github.com/Banner-babaner/proxytools/ratelimit/entity"
 )
 
 
@@ -22,7 +25,7 @@ type clientBucket struct {
     activeConns int
 }
 
-func NewLimiterService(cfg config.RateLimitConfig) *LimiterService {
+func NewLimiterService(cfg entity.RateLimitConfig) *LimiterService {
     return &LimiterService{
         clients: make(map[string]*clientBucket),
         config:  cfg,

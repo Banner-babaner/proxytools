@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Banner-babaner/proxytools/ratelimit/entity"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -30,18 +31,18 @@ func TestNewLimiterService(t *testing.T) {
 }
 
 func TestAllow_FirstRequest(t *testing.T) {
-	ls := NewLimiterService(config.RateLimitConfig{
+	ls := NewLimiterService(entity.RateLimitConfig{
 		Enabled: true,
-		Default: config.RateLimitDefaults{RPS: 10},
+		Default: entity.RateLimitDefaults{RPS: 10},
 	})
 
 	assert.True(t, ls.Allow("192.168.1.1"))
 }
 
 func TestAllow_RateLimitExceeded(t *testing.T) {
-	ls := NewLimiterService(config.RateLimitConfig{
+	ls := NewLimiterService(entity.RateLimitConfig{
 		Enabled: true,
-		Default: config.RateLimitDefaults{RPS: 2},
+		Default: entity.RateLimitDefaults{RPS: 2},
 	})
 
 	ip := "192.168.1.1"
@@ -52,9 +53,9 @@ func TestAllow_RateLimitExceeded(t *testing.T) {
 }
 
 func TestAllow_TokenRefill(t *testing.T) {
-	ls := NewLimiterService(config.RateLimitConfig{
+	ls := NewLimiterService(entity.RateLimitConfig{
 		Enabled: true,
-		Default: config.RateLimitDefaults{RPS: 5},
+		Default: entity.RateLimitDefaults{RPS: 5},
 	})
 
 	ip := "10.0.0.1"
@@ -70,9 +71,9 @@ func TestAllow_TokenRefill(t *testing.T) {
 }
 
 func TestAllow_TokenBurst(t *testing.T) {
-	ls := NewLimiterService(config.RateLimitConfig{
+	ls := NewLimiterService(entity.RateLimitConfig{
 		Enabled: true,
-		Default: config.RateLimitDefaults{RPS: 3},
+		Default: entity.RateLimitDefaults{RPS: 3},
 	})
 
 	ip := "192.168.1.1"
@@ -84,7 +85,7 @@ func TestAllow_TokenBurst(t *testing.T) {
 }
 
 func TestAllow_Disabled(t *testing.T) {
-	ls := NewLimiterService(config.RateLimitConfig{
+	ls := NewLimiterService(entity.RateLimitConfig{
 		Enabled: false,
 	})
 
@@ -94,9 +95,9 @@ func TestAllow_Disabled(t *testing.T) {
 }
 
 func TestAllow_MultipleClients(t *testing.T) {
-	ls := NewLimiterService(config.RateLimitConfig{
+	ls := NewLimiterService(entity.RateLimitConfig{
 		Enabled: true,
-		Default: config.RateLimitDefaults{RPS: 3},
+		Default: entity.RateLimitDefaults{RPS: 3},
 	})
 
 	ls.Allow("1.1.1.1")
@@ -110,9 +111,9 @@ func TestAllow_MultipleClients(t *testing.T) {
 }
 
 func TestAllow_DifferentIPs(t *testing.T) {
-	ls := NewLimiterService(config.RateLimitConfig{
+	ls := NewLimiterService(entity.RateLimitConfig{
 		Enabled: true,
-		Default: config.RateLimitDefaults{RPS: 1},
+		Default: entity.RateLimitDefaults{RPS: 1},
 	})
 
 	assert.True(t, ls.Allow("10.0.0.1"))
@@ -122,9 +123,9 @@ func TestAllow_DifferentIPs(t *testing.T) {
 }
 
 func TestAllow_NewClientCreation(t *testing.T) {
-	ls := NewLimiterService(config.RateLimitConfig{
+	ls := NewLimiterService(entity.RateLimitConfig{
 		Enabled: true,
-		Default: config.RateLimitDefaults{RPS: 5},
+		Default: entity.RateLimitDefaults{RPS: 5},
 	})
 
 
@@ -137,9 +138,9 @@ func TestAllow_NewClientCreation(t *testing.T) {
 }
 
 func TestIncrementConnections(t *testing.T) {
-	ls := NewLimiterService(config.RateLimitConfig{
+	ls := NewLimiterService(entity.RateLimitConfig{
 		Enabled: true,
-		Default: config.RateLimitDefaults{Connections: 2},
+		Default: entity.RateLimitDefaults{Connections: 2},
 	})
 
 	ip := "192.168.1.1"
@@ -150,7 +151,7 @@ func TestIncrementConnections(t *testing.T) {
 }
 
 func TestIncrementConnections_Disabled(t *testing.T) {
-	ls := NewLimiterService(config.RateLimitConfig{
+	ls := NewLimiterService(entity.RateLimitConfig{
 		Enabled: false,
 	})
 
@@ -160,9 +161,9 @@ func TestIncrementConnections_Disabled(t *testing.T) {
 }
 
 func TestDecrementConnections(t *testing.T) {
-	ls := NewLimiterService(config.RateLimitConfig{
+	ls := NewLimiterService(entity.RateLimitConfig{
 		Enabled: true,
-		Default: config.RateLimitDefaults{Connections: 2},
+		Default: entity.RateLimitDefaults{Connections: 2},
 	})
 
 	ip := "10.0.0.1"
@@ -177,9 +178,9 @@ func TestDecrementConnections(t *testing.T) {
 }
 
 func TestDecrementConnections_Zero(t *testing.T) {
-	ls := NewLimiterService(config.RateLimitConfig{
+	ls := NewLimiterService(entity.RateLimitConfig{
 		Enabled: true,
-		Default: config.RateLimitDefaults{Connections: 2},
+		Default: entity.RateLimitDefaults{Connections: 2},
 	})
 
 	assert.NotPanics(t, func() {
@@ -188,9 +189,9 @@ func TestDecrementConnections_Zero(t *testing.T) {
 }
 
 func TestDecrementConnections_UnknownIP(t *testing.T) {
-	ls := NewLimiterService(config.RateLimitConfig{
+	ls := NewLimiterService(entity.RateLimitConfig{
 		Enabled: true,
-		Default: config.RateLimitDefaults{Connections: 5},
+		Default: entity.RateLimitDefaults{Connections: 5},
 	})
 
 	// Не паникует
@@ -198,7 +199,7 @@ func TestDecrementConnections_UnknownIP(t *testing.T) {
 }
 
 func TestDecrementConnections_Disabled(t *testing.T) {
-	ls := NewLimiterService(config.RateLimitConfig{
+	ls := NewLimiterService(entity.RateLimitConfig{
 		Enabled: false,
 	})
 
@@ -207,9 +208,9 @@ func TestDecrementConnections_Disabled(t *testing.T) {
 }
 
 func TestGetStats(t *testing.T) {
-	ls := NewLimiterService(config.RateLimitConfig{
+	ls := NewLimiterService(entity.RateLimitConfig{
 		Enabled: true,
-		Default: config.RateLimitDefaults{
+		Default: entity.RateLimitDefaults{
 			RPS:         10,
 			Connections: 5,
 		},
@@ -233,16 +234,16 @@ func TestGetStats(t *testing.T) {
 }
 
 func TestGetStats_UnknownIP(t *testing.T) {
-	ls := NewLimiterService(config.RateLimitConfig{Enabled: true})
+	ls := NewLimiterService(entity.RateLimitConfig{Enabled: true})
 
 	stats := ls.GetStats("unknown")
 	assert.Nil(t, stats)
 }
 
 func TestGetStats_MultipleIPs(t *testing.T) {
-	ls := NewLimiterService(config.RateLimitConfig{
+	ls := NewLimiterService(entity.RateLimitConfig{
 		Enabled: true,
-		Default: config.RateLimitDefaults{RPS: 10},
+		Default: entity.RateLimitDefaults{RPS: 10},
 	})
 
 	ls.Allow("ip-1")
@@ -255,9 +256,9 @@ func TestGetStats_MultipleIPs(t *testing.T) {
 }
 
 func TestCleanup_OldEntries(t *testing.T) {
-	ls := NewLimiterService(config.RateLimitConfig{
+	ls := NewLimiterService(entity.RateLimitConfig{
 		Enabled: true,
-		Default: config.RateLimitDefaults{RPS: 10},
+		Default: entity.RateLimitDefaults{RPS: 10},
 	})
 
 	ls.Allow("ip-old")
@@ -281,9 +282,9 @@ func TestCleanup_OldEntries(t *testing.T) {
 }
 
 func TestCleanup_FreshEntries(t *testing.T) {
-	ls := NewLimiterService(config.RateLimitConfig{
+	ls := NewLimiterService(entity.RateLimitConfig{
 		Enabled: true,
-		Default: config.RateLimitDefaults{RPS: 10},
+		Default: entity.RateLimitDefaults{RPS: 10},
 	})
 
 	ls.Allow("ip-fresh")
@@ -300,9 +301,9 @@ func TestCleanup_FreshEntries(t *testing.T) {
 }
 
 func TestConcurrentAllow(t *testing.T) {
-	ls := NewLimiterService(config.RateLimitConfig{
+	ls := NewLimiterService(entity.RateLimitConfig{
 		Enabled: true,
-		Default: config.RateLimitDefaults{RPS: 100},
+		Default: entity.RateLimitDefaults{RPS: 100},
 	})
 
 	var wg sync.WaitGroup
@@ -323,9 +324,9 @@ func TestConcurrentAllow(t *testing.T) {
 }
 
 func TestConcurrentIncrementDecrement(t *testing.T) {
-	ls := NewLimiterService(config.RateLimitConfig{
+	ls := NewLimiterService(entity.RateLimitConfig{
 		Enabled: true,
-		Default: config.RateLimitDefaults{Connections: 50},
+		Default: entity.RateLimitDefaults{Connections: 50},
 	})
 
 	var wg sync.WaitGroup
@@ -352,9 +353,9 @@ func TestConcurrentIncrementDecrement(t *testing.T) {
 }
 
 func TestConcurrentGetStats(t *testing.T) {
-	ls := NewLimiterService(config.RateLimitConfig{
+	ls := NewLimiterService(entity.RateLimitConfig{
 		Enabled: true,
-		Default: config.RateLimitDefaults{RPS: 100},
+		Default: entity.RateLimitDefaults{RPS: 100},
 	})
 
 	ls.Allow("stats-ip")
@@ -373,9 +374,9 @@ func TestConcurrentGetStats(t *testing.T) {
 }
 
 func TestAllow_MaxTokensReset(t *testing.T) {
-	ls := NewLimiterService(config.RateLimitConfig{
+	ls := NewLimiterService(entity.RateLimitConfig{
 		Enabled: true,
-		Default: config.RateLimitDefaults{RPS: 3},
+		Default: entity.RateLimitDefaults{RPS: 3},
 	})
 
 	ip := "reset-ip"
@@ -394,9 +395,9 @@ func TestAllow_MaxTokensReset(t *testing.T) {
 }
 
 func TestLimiterService_CleanupMethod(t *testing.T) {
-	ls := NewLimiterService(config.RateLimitConfig{
+	ls := NewLimiterService(entity.RateLimitConfig{
 		Enabled: true,
-		Default: config.RateLimitDefaults{RPS: 10},
+		Default: entity.RateLimitDefaults{RPS: 10},
 	})
 
 	ls.Allow("cleanup-test")
@@ -409,9 +410,9 @@ func TestLimiterService_CleanupMethod(t *testing.T) {
 }
 
 func TestAllow_PartialTokenRefill(t *testing.T) {
-	ls := NewLimiterService(config.RateLimitConfig{
+	ls := NewLimiterService(entity.RateLimitConfig{
 		Enabled: true,
-		Default: config.RateLimitDefaults{RPS: 10},
+		Default: entity.RateLimitDefaults{RPS: 10},
 	})
 
 	ip := "partial-ip"
@@ -433,9 +434,9 @@ func TestAllow_PartialTokenRefill(t *testing.T) {
 }
 
 func TestIncrementConnections_NewClient(t *testing.T) {
-	ls := NewLimiterService(config.RateLimitConfig{
+	ls := NewLimiterService(entity.RateLimitConfig{
 		Enabled: true,
-		Default: config.RateLimitDefaults{Connections: 3},
+		Default: entity.RateLimitDefaults{Connections: 3},
 	})
 
 	ip := "new-conn-client"
@@ -451,9 +452,9 @@ func TestIncrementConnections_NewClient(t *testing.T) {
 }
 
 func TestAllow_ZeroRPS(t *testing.T) {
-	ls := NewLimiterService(config.RateLimitConfig{
+	ls := NewLimiterService(entity.RateLimitConfig{
 		Enabled: true,
-		Default: config.RateLimitDefaults{RPS: 0},
+		Default: entity.RateLimitDefaults{RPS: 0},
 	})
 
 	assert.False(t, ls.Allow("zero-rps"))
