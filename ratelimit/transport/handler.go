@@ -8,10 +8,10 @@ import (
 )
 
 type Handler struct {
-	service *usecase.LimiterService
+	service *usecase.RateLimitService
 }
 
-func NewHandler(svc *usecase.LimiterService) *Handler {
+func NewHandler(svc *usecase.RateLimitService) *Handler {
 	return &Handler{service: svc}
 }
 
