@@ -1,4 +1,4 @@
-module ratelimit
+module github.com/Banner-babaner/proxytools/ratelimit
 
 go 1.25.7
 

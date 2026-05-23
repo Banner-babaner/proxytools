@@ -5,15 +5,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Banner-babaner/proxytools/config"
 	"github.com/stretchr/testify/assert"
 )
 
 
 func TestNewLimiterService(t *testing.T) {
-	cfg := config.RateLimitConfig{
+	cfg := entity.RateLimitConfig{
 		Enabled: true,
-		Default: config.RateLimitDefaults{
+		Default: entity.RateLimitDefaults{
 			RPS:         10,
 			RPM:         100,
 			RPH:         1000,

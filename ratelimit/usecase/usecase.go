@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"ratelimit/entity"
 	"sync"
 	"time"
 )
