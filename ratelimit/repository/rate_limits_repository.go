@@ -1,6 +1,6 @@
 package repository
 
-import "ratelimit/entity"
+import "github.com/Banner-babaner/proxytools/ratelimit/entity"
 
 type RateLimitRepository interface {
 	Allow(ip string) bool

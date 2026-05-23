@@ -3,11 +3,12 @@ package transport
 import (
 	"net/http"
 
+	"github.com/Banner-babaner/proxytools/ratelimit/usecase"
 	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
-	service *usecases.LimiterService
+	service *usecase.LimiterService
 }
 
 func NewHandler(svc *usecase.LimiterService) *Handler {

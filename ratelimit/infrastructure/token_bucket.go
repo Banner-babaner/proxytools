@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"ratelimit/entity"
+	"github.com/Banner-babaner/proxytools/ratelimit/entity"
 )
 
 type clientBucket struct {
