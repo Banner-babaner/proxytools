@@ -1,6 +1,6 @@
 package repository
 
-import "cache/entity"
+import "github.com/Banner-babaner/proxytools/cache/entity"
 
 type CacheRepository interface {
 	Get(key string) (*entity.CacheEntry, bool)
